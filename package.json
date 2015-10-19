@@ -10,5 +10,10 @@
   "license": "ISC",
   "devDependencies": {
     "mocha": "^2.3.3"
+  },
+  "dependencies": {
+    "bluebird": "^2.10.2",
+    "log4js": "^0.6.27",
+    "tmp": "0.0.28"
   }
 }
