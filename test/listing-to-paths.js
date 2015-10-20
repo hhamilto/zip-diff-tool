@@ -1,4 +1,5 @@
 var assert = require('assert')
+var path = require('path')
 
 var _ = require('lodash')
 
@@ -29,9 +30,9 @@ describe('listing-to-paths.js', function() {
 		}])
 		var expectedPaths = [
 		'a',
-		'1/b',
-		'1/3/d',
-		'1/3/e',
+		path.join('1','b'),
+		path.join('1','3','d'),
+		path.join('1','3','e'),
 		'c']
 		assert(_.isEqual(expectedPaths,paths))
 	})
