@@ -25,7 +25,6 @@ describe('directory-diff.js', function() {
 					name:'e'
 				}]
 			}]
-			//console.log(require('util').inspect(listing,{depth:100}))
 			assert(areListingsEquivalent(expectedListing,listing))
 			done()
 		})

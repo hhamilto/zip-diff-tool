@@ -93,6 +93,10 @@ describe('ZipDiff', function() {
 	})
 
 	afterEach(function(done) {
-		fs.unlink('diff.zip',done);
+		try{
+			fs.unlink('diff.zip',_.ary(done,0))
+		}catch(e){
+			done()
+		}
 	})
 })
