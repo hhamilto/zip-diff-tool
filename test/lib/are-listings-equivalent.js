@@ -1,5 +1,6 @@
 _ = require('lodash')
 module.exports =function(listing1,listing2){
+	if(!(listing1 instanceof Array && listing2 instanceof Array )) return false
 	var sortFileList = function(fileList){
 		return _.sortBy(fileList, 'name')
 	}
