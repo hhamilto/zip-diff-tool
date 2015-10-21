@@ -140,6 +140,27 @@ describe('ZipDiff', function() {
 		})
 	})
 
+	it('should handle archives made of its own lib directory', function (done) {
+		var zip1Path = path.join(__dirname,'resources','lib-dir','base.zip')
+		var zip2Path = path.join(__dirname,'resources','lib-dir','updated.zip')
+		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path, function(err, stdout, stderr){
+			if(err){
+				console.error('##### stdout:')
+				console.error(stdout)
+				console.error('##### stderr:')
+				console.error(stderr)
+				throw new Error('Zip diff tool made an error: '+err)
+			}
+			expectedListingOfDiff = [{
+				name: '7zip2.js'
+			}]
+			sevenZip.list('diff.zip').done(function(files){
+				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				done()
+			})
+		})
+	})
+
 	afterEach(function(done) {
 		try{
 			fs.unlink('diff.zip',_.ary(done,0))
