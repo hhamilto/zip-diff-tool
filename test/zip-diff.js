@@ -170,6 +170,57 @@ describe('ZipDiff', function() {
 		})
 	})
 
+	it('should ignore globs when told to', function (done) {
+		var zip1Path = path.join(__dirname,'resources','glob-test','base.zip')
+		var zip2Path = path.join(__dirname,'resources','glob-test','updated.zip')
+		var command = 'node '+pathToIndex+' '+zip1Path+' '+zip2Path+' -i completely-ignored -i gets-updated -i dot-foo-files-ignored/*.foo'
+		childProcess.exec(command, function(err, stdout, stderr){
+			if(err){
+				console.error('##### stdout:')
+				console.error(stdout)
+				console.error('##### stderr:')
+				console.error(stderr)
+				throw new Error('Zip diff tool made an error: '+err)
+			}
+			expectedListingOfDiff = [{
+				name: 'b'
+			},{
+				name: 'dot-foo-files-ignored',
+				children: [{
+					name:'gets-updated'
+				}]
+			}]
+			sevenZip.list('diff.zip').done(function(files){
+				areListingsEquivalent.test(files,expectedListingOfDiff)
+				done()
+			})
+		})
+	})
+
+	it('should ignore deleted files in the updated zip', function (done) {
+		var zip1Path = path.join(__dirname,'resources','files-deleted','base.zip')
+		var zip2Path = path.join(__dirname,'resources','files-deleted','updated.zip')
+		var command = 'node '+pathToIndex+' '+zip1Path+' '+zip2Path
+		childProcess.exec(command, function(err, stdout, stderr){
+			if(err){
+				console.error('##### stdout:')
+				console.error(stdout)
+				console.error('##### stderr:')
+				console.error(stderr)
+				throw new Error('Zip diff tool made an error: '+err)
+			}
+			expectedListingOfDiff = [{
+				name: 'd'
+			},{
+				name: 'e',
+			}]
+			sevenZip.list('diff.zip').done(function(files){
+				areListingsEquivalent.test(files,expectedListingOfDiff)
+				done()
+			})
+		})
+	})
+
 	before(function(done) {
 		try{
 			fs.unlink('diff.zip',_.ary(done,0))
