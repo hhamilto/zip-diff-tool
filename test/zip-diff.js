@@ -13,18 +13,18 @@ var sevenZip = require('../lib/7zip.js')
 var pathToIndex = path.join(__dirname,'..','index.js')
 
 describe('ZipDiff', function() {
-	/*it('shouldn\'t produce a diff archive when given duplicate archives', function (done) {
+	it('shouldn\'t produce a diff archive when given duplicate archives', function (done) {
 		var zip1Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
 		var zip2Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			fs.exists('diff.zip',function(exists){
-				assert(!exists)
+			fs.stat('zip.zip', function(err, stats){
+				assert(err.code == 'ENOENT')
 				done()
 			})
 		})
-	})*/
+	})
 
 	it('should produce a diff with an extra file', function (done) {
 		var zip1Path = path.join(__dirname,'resources','one-extra-file','1.zip')
@@ -32,9 +32,11 @@ describe('ZipDiff', function() {
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			expectedListingOfDiff = []
+			expectedListingOfDiff = [{
+				name: 'b'
+			}]
 			sevenZip.list('diff.zip').done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
 		})
@@ -50,7 +52,7 @@ describe('ZipDiff', function() {
 				name: 'a'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
 		})
@@ -71,21 +73,28 @@ describe('ZipDiff', function() {
 				}]
 			}]
 			sevenZip.list('diff.zip').done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
 		})
 	})
 
 	it('should produce a diff with complicated file structure', function (done) {
-		var zip1Path = path.join(__dirname,'resources','given-example','1.zip')
-		var zip2Path = path.join(__dirname,'resources','given-example','2.zip')
+		var zip1Path = path.join(__dirname,'resources','given-example','base.zip')
+		var zip2Path = path.join(__dirname,'resources','given-example','updated.zip')
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			expectedListingOfDiff = []
+			expectedListingOfDiff = [{
+				name: 'a.txt'
+			},{
+				name: 'dir1',
+				children:[{
+					name:'c.txt'
+				}]
+			}]
 			sevenZip.list('diff.zip').done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
 		})
@@ -113,7 +122,7 @@ describe('ZipDiff', function() {
 				name:'sample file2'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
 		})
@@ -134,7 +143,7 @@ describe('ZipDiff', function() {
 				name: 'kd1394.dll'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
 		})
@@ -155,10 +164,19 @@ describe('ZipDiff', function() {
 				name: '7zip2.js'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
 		})
+	})
+
+	before(function(done) {
+		try{
+			fs.unlink('diff.zip',_.ary(done,0))
+		}catch(e){
+			console.log(e)
+			done()
+		}
 	})
 
 	afterEach(function(done) {
