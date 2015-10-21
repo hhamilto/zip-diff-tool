@@ -3,6 +3,8 @@ var argv = require('yargs')
      .usage('Usage: '+'$0'.bold+' '+'BASE ARCHIVE'.underline+' '+'UPDATED ARCHIVE'.underline+' ['+'-o '.bold + 'DIFF ZIP OUTPUT'.underline+'] ['+'-i '.bold+'IGNORE GLOB'.underline+']...\n'+
      	'BASE ARCHIVE'.underline+' and '+'UPDATED ARCHIVE'.underline+' are both required')
      .demand(2)
+     .help('h')
+     .alias('h', 'help')
      .alias('i', 'ignore-glob')
      .describe('i', 'Pass in shell-glob style strings to ignore paths in the archives.')
      .default('o', 'diff.zip')
