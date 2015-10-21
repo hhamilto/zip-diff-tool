@@ -13,15 +13,14 @@ var sevenZip = require('../lib/7zip.js')
 var pathToIndex = path.join(__dirname,'..','index.js')
 
 describe('ZipDiff', function() {
-	/*it('should produce and empty diff archive when given duplicate archives', function (done) {
+	/*it('shouldn\'t produce a diff archive when given duplicate archives', function (done) {
 		var zip1Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
 		var zip2Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			expectedListingOfDiff = []
-			sevenZip.list(path.join(__dirname,'diff.zip')).done(function(files){
-				assert(areListingsEquivalent(files,expectedListingOfDiff))
+			fs.exists('diff.zip',function(exists){
+				assert(!exists)
 				done()
 			})
 		})
@@ -85,6 +84,55 @@ describe('ZipDiff', function() {
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
 			expectedListingOfDiff = []
+			sevenZip.list('diff.zip').done(function(files){
+				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				done()
+			})
+		})
+	})
+
+	it('should handle names with spaces in them', function (done) {
+		var zip1Path = path.join(__dirname,'resources','spaces-in-file-names','base.zip')
+		var zip2Path = path.join(__dirname,'resources','spaces-in-file-names','updated.zip')
+		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path, function(err, stdout, stderr){
+			if(err){
+				console.error('##### stdout:')
+				console.error(stdout)
+				console.error('##### stderr:')
+				console.error(stderr)
+				throw new Error('Zip diff tool made an error: '+err)
+			}
+			expectedListingOfDiff = [{
+				name:'sample directory',
+				children:[{
+					name: 'b'
+				},{
+					name: 'c'
+				}]
+			},{
+				name:'sample file2'
+			}]
+			sevenZip.list('diff.zip').done(function(files){
+				assert(areListingsEquivalent(files,expectedListingOfDiff))
+				done()
+			})
+		})
+	})
+
+	it('should handle dll files', function (done) {
+		var zip1Path = path.join(__dirname,'resources','dlls','base.zip')
+		var zip2Path = path.join(__dirname,'resources','dlls','updated.zip')
+		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path, function(err, stdout, stderr){
+			if(err){
+				console.error('##### stdout:')
+				console.error(stdout)
+				console.error('##### stderr:')
+				console.error(stderr)
+				throw new Error('Zip diff tool made an error: '+err)
+			}
+			expectedListingOfDiff = [{
+				name: 'kd1394.dll'
+			}]
 			sevenZip.list('diff.zip').done(function(files){
 				assert(areListingsEquivalent(files,expectedListingOfDiff))
 				done()
