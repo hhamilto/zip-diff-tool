@@ -13,16 +13,20 @@ var sevenZip = require('../lib/7zip.js')
 var pathToIndex = path.join(__dirname,'..','index.js')
 
 describe('ZipDiff', function() {
-	it('shouldn\'t produce a diff archive when given duplicate archives', function (done) {
+	it('should produce an empty archive when given duplicate archives', function (done) {
 		var zip1Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
 		var zip2Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			fs.stat('zip.zip', function(err, stats){
-				assert(err.code == 'ENOENT')
+			
+			var expectedListingOfDiff = [{
+			}]
+			sevenZip.list('diff.zip').done(function(files){
+				areListingsEquivalent.test(files,expectedListingOfDiff)
 				done()
 			})
+			
 		})
 	})
 
@@ -32,7 +36,7 @@ describe('ZipDiff', function() {
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: 'b'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
@@ -48,7 +52,7 @@ describe('ZipDiff', function() {
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: 'a'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
@@ -64,7 +68,7 @@ describe('ZipDiff', function() {
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: '2',
 				children: [{
 					name:'foo',
@@ -85,7 +89,7 @@ describe('ZipDiff', function() {
 		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
 			if(code)
 				throw new Error('Zip diff tool exited with code: '+code)
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: 'a.txt'
 			},{
 				name: 'dir1',
@@ -111,7 +115,7 @@ describe('ZipDiff', function() {
 				console.error(stderr)
 				throw new Error('Zip diff tool made an error: '+err)
 			}
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name:'sample directory',
 				children:[{
 					name: 'b'
@@ -139,7 +143,7 @@ describe('ZipDiff', function() {
 				console.error(stderr)
 				throw new Error('Zip diff tool made an error: '+err)
 			}
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: 'kd1394.dll'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
@@ -160,7 +164,7 @@ describe('ZipDiff', function() {
 				console.error(stderr)
 				throw new Error('Zip diff tool made an error: '+err)
 			}
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: '7zip2.js'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
@@ -182,7 +186,7 @@ describe('ZipDiff', function() {
 				console.error(stderr)
 				throw new Error('Zip diff tool made an error: '+err)
 			}
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: 'b'
 			},{
 				name: 'dot-foo-files-ignored',
@@ -209,7 +213,7 @@ describe('ZipDiff', function() {
 				console.error(stderr)
 				throw new Error('Zip diff tool made an error: '+err)
 			}
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: 'd'
 			},{
 				name: 'e',
@@ -221,7 +225,7 @@ describe('ZipDiff', function() {
 		})
 	})
 	
-	it('should handle archives with many files', function (done) {
+	it.skip('should handle archives with many files', function (done) {
 		this.timeout(30*1000)
 		var zip1Path = path.join(__dirname,'resources','lotsa-files','base.zip')
 		var zip2Path = path.join(__dirname,'resources','lotsa-files','updated.zip')
@@ -234,7 +238,7 @@ describe('ZipDiff', function() {
 				console.error(stderr)
 				throw new Error('Zip diff tool made an error: '+err)
 			}
-			expectedListingOfDiff = [{
+			var expectedListingOfDiff = [{
 				name: 'findme'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
