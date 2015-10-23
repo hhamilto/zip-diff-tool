@@ -220,13 +220,12 @@ describe('ZipDiff', function() {
 			})
 		})
 	})
-
+	
 	it('should handle archives with many files', function (done) {
-		this.timeout(1000000)
+		this.timeout(30*1000)
 		var zip1Path = path.join(__dirname,'resources','lotsa-files','base.zip')
 		var zip2Path = path.join(__dirname,'resources','lotsa-files','updated.zip')
 		var command = 'node '+pathToIndex+' '+zip1Path+' '+zip2Path
-		console.log()
 		childProcess.exec(command, function(err, stdout, stderr){
 			if(err){
 				console.error('##### stdout:')
