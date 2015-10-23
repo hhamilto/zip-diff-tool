@@ -221,6 +221,30 @@ describe('ZipDiff', function() {
 		})
 	})
 
+	it('should handle archives with many files', function (done) {
+		this.timeout(1000000)
+		var zip1Path = path.join(__dirname,'resources','lotsa-files','base.zip')
+		var zip2Path = path.join(__dirname,'resources','lotsa-files','updated.zip')
+		var command = 'node '+pathToIndex+' '+zip1Path+' '+zip2Path
+		console.log()
+		childProcess.exec(command, function(err, stdout, stderr){
+			if(err){
+				console.error('##### stdout:')
+				console.error(stdout)
+				console.error('##### stderr:')
+				console.error(stderr)
+				throw new Error('Zip diff tool made an error: '+err)
+			}
+			expectedListingOfDiff = [{
+				name: 'findme'
+			}]
+			sevenZip.list('diff.zip').done(function(files){
+				areListingsEquivalent.test(files,expectedListingOfDiff)
+				done()
+			})
+		})
+	})
+
 	before(function(done) {
 		try{
 			fs.unlink('diff.zip',_.ary(done,0))
