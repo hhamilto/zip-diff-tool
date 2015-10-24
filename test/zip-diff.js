@@ -1,9 +1,10 @@
+var Promise = require('bluebird')
 var assert = require('assert')
-var childProcess = require('child_process')
+var childProcess = Promise.promisifyAll(require('child_process'))
 var path = require('path')
 var util = require('util')
 var os = require('os')
-var fs = require('fs')
+var fs = Promise.promisifyAll(require('fs'))
 
 var tmp = require('tmp')
 
@@ -13,17 +14,16 @@ var sevenZip = require('../lib/7zip.js')
 var pathToIndex = path.join(__dirname,'..','index.js')
 
 describe('ZipDiff', function() {
-	it('should produce an empty archive when given duplicate archives', function (done) {
-		var zip1Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
-		var zip2Path = path.join(__dirname,'resources','duplicate-archives-empty-diff','1.zip')
-		childProcess.exec('node '+pathToIndex+' '+zip1Path+' '+zip2Path).on('close', function(code){
-			if(code)
-				throw new Error('Zip diff tool exited with code: '+code)
-			
-			var expectedListingOfDiff = [{
-			}]
-			sevenZip.list('diff.zip').done(function(files){
-				areListingsEquivalent.test(files,expectedListingOfDiff)
+	it('shouldn\'t produce an empty archive when given duplicate archives', function (done) {
+		var directory = 'duplicate-archives-empty-diff'
+		var zip1Path = path.join(__dirname,'resources',directory,'1.zip')
+		var zip2Path = path.join(__dirname,'resources',directory,'1.zip')
+		var command = 'node '+pathToIndex+' '+zip1Path+' '+zip2Path
+		childProcess.execAsync(command).spread(function(stdout, stderr){
+			fs.statAsync('diff.zip').then(function(stats){
+				done(new Error('The diff.zip exists'))
+			}).catch(function(error){
+				assert(error.code == 'ENOENT')
 				done()
 			})
 			
@@ -240,6 +240,32 @@ describe('ZipDiff', function() {
 			}
 			var expectedListingOfDiff = [{
 				name: 'findme'
+			}]
+			sevenZip.list('diff.zip').done(function(files){
+				areListingsEquivalent.test(files,expectedListingOfDiff)
+				done()
+			})
+		})
+	})
+	
+	it('shouldn\'t produce diff archives with empty folders', function (done) {
+		this.timeout(30*1000)
+		var directory = 'empty-dir'
+		var zip1Path = path.join(__dirname,'resources',directory,'base.zip')
+		var zip2Path = path.join(__dirname,'resources',directory,'updated.zip')
+		var command = 'node '+pathToIndex+' '+zip1Path+' '+zip2Path
+		childProcess.exec(command, function(err, stdout, stderr){
+			if(err){
+				console.error('##### stdout:')
+				console.error(stdout)
+				console.error('##### stderr:')
+				console.error(stderr)
+				throw new Error('Zip diff tool made an error: '+err)
+			}
+			var expectedListingOfDiff = [{
+				name: 'e'
+			},{
+				name: 'f'
 			}]
 			sevenZip.list('diff.zip').done(function(files){
 				areListingsEquivalent.test(files,expectedListingOfDiff)
